@@ -1,0 +1,195 @@
+// Nav links: remove smooth scroll, use default anchor behavior
+const navLinks = document.querySelectorAll('.nav-link');
+const header = document.querySelector('header');
+
+navLinks.forEach(link => {
+  link.addEventListener('click', function(e) {
+    // Only close mobile nav, do not prevent default or scroll manually
+    closeMobileNav();
+  });
+});
+
+// Highlight active nav link on scroll
+function setActiveNavLink() {
+  const scrollPos = window.scrollY + header.offsetHeight + 10;
+  navLinks.forEach(link => {
+    const section = document.querySelector(link.getAttribute('href'));
+    if (section) {
+      const sectionTop = section.offsetTop;
+      const sectionBottom = sectionTop + section.offsetHeight;
+      if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    }
+  });
+}
+window.addEventListener('scroll', setActiveNavLink);
+window.addEventListener('DOMContentLoaded', setActiveNavLink);
+
+// Hamburger menu logic
+const navToggle = document.querySelector('.nav-toggle');
+const navLinksContainer = document.getElementById('nav-links');
+
+function openMobileNav() {
+  navLinksContainer.classList.add('open');
+  navToggle.setAttribute('aria-expanded', 'true');
+}
+function closeMobileNav() {
+  navLinksContainer.classList.remove('open');
+  navToggle.setAttribute('aria-expanded', 'false');
+}
+
+if (navToggle) {
+  navToggle.addEventListener('click', function() {
+    const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+    if (expanded) {
+      closeMobileNav();
+    } else {
+      openMobileNav();
+    }
+  });
+}
+
+// Close nav on resize if desktop
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 600) {
+    closeMobileNav();
+  }
+});
+
+// === Fade-in/Slide-up Animations ===
+function animateOnScroll() {
+  const animatedEls = document.querySelectorAll('[data-animate]');
+  const observer = new window.IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-in');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.15
+  });
+  animatedEls.forEach(el => {
+    observer.observe(el);
+  });
+}
+window.addEventListener('DOMContentLoaded', animateOnScroll);
+
+// === Dark Mode Toggle ===
+const darkToggle = document.querySelector('.dark-toggle');
+const darkToggleIcon = document.querySelector('.dark-toggle-icon');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+function setDarkMode(enabled) {
+  document.body.classList.toggle('dark-theme', enabled);
+  localStorage.setItem('darkMode', enabled ? '1' : '0');
+  setDarkToggleIcon(enabled);
+}
+
+function setDarkToggleIcon(isDark) {
+  if (!darkToggleIcon) return;
+  darkToggleIcon.innerHTML = isDark
+    ? `<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"><path d="M21.64 13.07A9 9 0 0 1 12 3a1 1 0 0 0-1 1v.25A8 8 0 1 0 20.75 13a1 1 0 0 0 .89-1.13Z" fill="currentColor"/></svg>`
+    : `<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5.75" stroke="currentColor" stroke-width="1.5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+}
+
+function getStoredDarkMode() {
+  const stored = localStorage.getItem('darkMode');
+  if (stored === '1') return true;
+  if (stored === '0') return false;
+  return prefersDark;
+}
+
+if (darkToggle) {
+  setDarkMode(getStoredDarkMode());
+  darkToggle.addEventListener('click', () => {
+    setDarkMode(!document.body.classList.contains('dark-theme'));
+  });
+}
+
+// === Page-like Section Scrolling ===
+const sectionIds = ['about', 'projects', 'skills', 'cv', 'achievements', 'contact'];
+const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+let currentSectionIndex = 0;
+let isPageSnapping = false;
+let lastScrollTime = 0;
+
+function scrollToSection(index) {
+  if (index < 0 || index >= sections.length) return;
+  isPageSnapping = true;
+  currentSectionIndex = index;
+  sections[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(() => { isPageSnapping = false; }, 600);
+}
+
+// Immediate scroll direction detection and snapping
+window.addEventListener('wheel', (e) => {
+  // Prevent multiple triggers on single scroll gesture
+  const now = Date.now();
+  if (now - lastScrollTime < 300) return;
+  lastScrollTime = now;
+  
+  if (isPageSnapping) return;
+  
+  const direction = e.deltaY > 0 ? 1 : -1; // 1 = down, -1 = up
+  let nextIndex = currentSectionIndex + direction;
+  
+  // Respect bounds: don't scroll beyond first/last section
+  if (nextIndex < 0 || nextIndex >= sections.length) return;
+  
+  scrollToSection(nextIndex);
+  e.preventDefault();
+}, { passive: false });
+
+// Keyboard navigation (PageUp/PageDown/ArrowUp/ArrowDown)
+window.addEventListener('keydown', (e) => {
+  if (isPageSnapping) return;
+  
+  if (["PageDown", "ArrowDown"].includes(e.key)) {
+    if (currentSectionIndex < sections.length - 1) {
+      scrollToSection(currentSectionIndex + 1);
+      e.preventDefault();
+    }
+  } else if (["PageUp", "ArrowUp"].includes(e.key)) {
+    if (currentSectionIndex > 0) {
+      scrollToSection(currentSectionIndex - 1);
+      e.preventDefault();
+    }
+  }
+});
+
+// Initialize current section index on page load
+window.addEventListener('DOMContentLoaded', () => {
+  currentSectionIndex = 0;
+});
+
+// === Contact Form Toggle ===
+const emailToggleBtn = document.getElementById('emailToggleBtn');
+const contactForm = document.getElementById('contactForm');
+
+if (emailToggleBtn && contactForm) {
+  emailToggleBtn.addEventListener('click', function() {
+    // Hide the email toggle button
+    emailToggleBtn.style.display = 'none';
+    
+    // Show the contact form
+    contactForm.classList.remove('hidden');
+    
+    // Focus on the first input for accessibility
+    const firstInput = contactForm.querySelector('input');
+    if (firstInput) {
+      setTimeout(() => firstInput.focus(), 100);
+    }
+  });
+}
+
+// === WIP Project Card Overlay ===
+document.addEventListener('click', function(e) {
+  const card = e.target.closest('.project-card[data-wip="true"]');
+  if (!card) return;
+  e.preventDefault();
+  card.classList.toggle('wip-active');
+}); 
