@@ -12,21 +12,26 @@ navLinks.forEach(link => {
 // Highlight active nav link on scroll
 function setActiveNavLink() {
   const scrollPos = window.scrollY + header.offsetHeight + 10;
+  let foundActive = false;
   navLinks.forEach(link => {
     const section = document.querySelector(link.getAttribute('href'));
     if (section) {
       const sectionTop = section.offsetTop;
       const sectionBottom = sectionTop + section.offsetHeight;
-      if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+      if (!foundActive && scrollPos >= sectionTop && scrollPos < sectionBottom) {
         link.classList.add('active');
+        foundActive = true;
       } else {
         link.classList.remove('active');
       }
+    } else {
+      link.classList.remove('active');
     }
   });
 }
 window.addEventListener('scroll', setActiveNavLink);
 window.addEventListener('DOMContentLoaded', setActiveNavLink);
+window.addEventListener('resize', setActiveNavLink);
 
 // Hamburger menu logic
 const navToggle = document.querySelector('.nav-toggle');
