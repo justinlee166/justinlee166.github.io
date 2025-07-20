@@ -260,8 +260,8 @@ if (darkToggle) {
   });
 }
 
-// === Page-like Section Scrolling ===
-const sectionIds = ['about', 'projects', 'skills', 'cv', 'achievements', 'contact'];
+// === Enhanced Page-like Section Scrolling for Mobile ===
+const sectionIds = ['about', 'projects', 'skills', 'achievements', 'contact'];
 const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
 let currentSectionIndex = 0;
 let isPageSnapping = false;
@@ -271,15 +271,30 @@ function scrollToSection(index) {
   if (index < 0 || index >= sections.length) return;
   isPageSnapping = true;
   currentSectionIndex = index;
-  sections[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
-  setTimeout(() => { isPageSnapping = false; }, 600);
+  
+  // Faster, smoother scrolling for mobile
+  const isMobile = window.innerWidth <= 768;
+  const scrollBehavior = isMobile ? 'smooth' : 'smooth';
+  
+  sections[index].scrollIntoView({ 
+    behavior: scrollBehavior, 
+    block: 'start',
+    inline: 'nearest'
+  });
+  
+  // Shorter timeout for more responsive feel on mobile
+  const timeout = isMobile ? 400 : 600;
+  setTimeout(() => { isPageSnapping = false; }, timeout);
 }
 
-// Immediate scroll direction detection and snapping
+// Enhanced wheel event handling for smoother mobile experience
 window.addEventListener('wheel', (e) => {
+  const isMobile = window.innerWidth <= 768;
+  const throttleTime = isMobile ? 200 : 300;
+  
   // Prevent multiple triggers on single scroll gesture
   const now = Date.now();
-  if (now - lastScrollTime < 300) return;
+  if (now - lastScrollTime < throttleTime) return;
   lastScrollTime = now;
   
   if (isPageSnapping) return;
@@ -294,9 +309,11 @@ window.addEventListener('wheel', (e) => {
   e.preventDefault();
 }, { passive: false });
 
-// Keyboard navigation (PageUp/PageDown/ArrowUp/ArrowDown)
+// Enhanced keyboard navigation with mobile considerations
 window.addEventListener('keydown', (e) => {
   if (isPageSnapping) return;
+  
+  const isMobile = window.innerWidth <= 768;
   
   if (["PageDown", "ArrowDown"].includes(e.key)) {
     if (currentSectionIndex < sections.length - 1) {
@@ -309,6 +326,26 @@ window.addEventListener('keydown', (e) => {
       e.preventDefault();
     }
   }
+});
+
+// Update current section index on scroll (for mobile scroll snapping)
+window.addEventListener('scroll', () => {
+  if (isPageSnapping) return;
+  
+  const scrollY = window.scrollY;
+  const viewportHeight = window.innerHeight;
+  
+  // Determine which section is most visible
+  sections.forEach((section, index) => {
+    const rect = section.getBoundingClientRect();
+    const sectionTop = rect.top + scrollY;
+    const sectionCenter = sectionTop + (rect.height / 2);
+    const viewportCenter = scrollY + (viewportHeight / 2);
+    
+    if (Math.abs(sectionCenter - viewportCenter) < viewportHeight / 3) {
+      currentSectionIndex = index;
+    }
+  });
 });
 
 // Initialize current section index on page load

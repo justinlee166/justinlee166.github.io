@@ -1954,7 +1954,7 @@ body.dark-theme .nav-link.active::after {
   z-index: 1;
 } 
 
-/* === Mobile Full-Screen Sections with Scroll Snapping === */
+/* === Enhanced Mobile Full-Screen Sections === */
 main {
   scroll-snap-type: y mandatory;
   overflow-y: auto;
@@ -1962,7 +1962,7 @@ main {
   width: 100%;
 }
 
-/* Ensure all sections snap to viewport on mobile and desktop */
+/* Desktop and large screens: standard behavior */
 main > section,
 .about-section,
 .projects-section,
@@ -1984,8 +1984,17 @@ main > section,
   background-clip: padding-box;
 }
 
-/* Mobile-specific adjustments for full-screen sections */
-@media (max-width: 700px) {
+/* Mobile-specific: Enhanced spacing and smoother scrolling */
+@media (max-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  main {
+    scroll-snap-type: y mandatory;
+    scroll-padding-top: 80px;
+  }
+  
   main > section,
   .about-section,
   .projects-section,
@@ -1994,25 +2003,34 @@ main > section,
   .contact-section {
     min-height: 100vh;
     height: 100vh;
-    padding-top: 80px; /* Account for fixed nav */
-    padding-bottom: 2rem;
+    padding-top: 120px; /* Extra space for nav bar + breathing room */
+    padding-bottom: 3rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    margin-bottom: 0;
     overflow-y: auto;
     scroll-snap-align: start;
     scroll-snap-stop: always;
+    /* Ensure sections are visually distinct */
+    border-bottom: 1px solid rgba(0,0,0,0.05);
   }
   
-  /* Ensure content doesn't overflow on very small screens */
-  .about-section,
-  .projects-section,
-  .skills-section,
-  .achievements-section,
-  .contact-section {
-    padding-left: 1rem;
-    padding-right: 1rem;
+  /* Dark mode border */
+  body.dark-theme .about-section,
+  body.dark-theme .projects-section,
+  body.dark-theme .skills-section,
+  body.dark-theme .achievements-section,
+  body.dark-theme .contact-section {
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  
+  /* About section: extra top spacing */
+  .about-section {
+    padding-top: 140px;
   }
 }
 
-/* Very small screens: prevent content cutoff */
+/* Very small screens: additional adjustments */
 @media (max-width: 480px) {
   main > section,
   .about-section,
@@ -2020,16 +2038,15 @@ main > section,
   .skills-section,
   .achievements-section,
   .contact-section {
-    padding-top: 90px;
-    padding-bottom: 1rem;
-    min-height: 100vh;
-    height: 100vh;
+    padding-top: 100px;
+    padding-bottom: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
-}
-
-/* Ensure smooth scrolling on all devices */
-html {
-  scroll-behavior: smooth;
+  
+  .about-section {
+    padding-top: 120px;
+  }
 }
 
 /* Prevent any section bleed-through */
@@ -2040,4 +2057,20 @@ html {
 .contact-section {
   margin-bottom: 0;
   border-bottom: none;
+}
+
+/* Desktop: remove borders */
+@media (min-width: 769px) {
+  .about-section,
+  .projects-section,
+  .skills-section,
+  .achievements-section,
+  .contact-section {
+    border-bottom: none;
+  }
+}
+
+/* Ensure smooth scrolling on all devices */
+html {
+  scroll-behavior: smooth;
 } 
