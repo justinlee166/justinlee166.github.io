@@ -83,6 +83,14 @@ const darkToggle = document.querySelector('.dark-toggle');
 const darkToggleIcon = document.querySelector('.dark-toggle-icon');
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+// Draggable functionality variables
+let isDragging = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let toggleStartX = 0;
+let toggleStartY = 0;
+let animationId = null;
+
 function setDarkMode(enabled) {
   document.body.classList.toggle('dark-theme', enabled);
   localStorage.setItem('darkMode', enabled ? '1' : '0');
@@ -103,10 +111,147 @@ function getStoredDarkMode() {
   return prefersDark;
 }
 
-if (darkToggle) {
-  setDarkMode(getStoredDarkMode());
-  darkToggle.addEventListener('click', () => {
+function getStoredTogglePosition() {
+  const stored = localStorage.getItem('togglePosition');
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  return { x: window.innerWidth - 70, y: 20 }; // Default position
+}
+
+function saveTogglePosition(x, y) {
+  localStorage.setItem('togglePosition', JSON.stringify({ x, y }));
+}
+
+function setTogglePosition(x, y) {
+  if (!darkToggle) return;
+  
+  // Ensure toggle stays within viewport bounds
+  const toggleSize = 50;
+  const minX = 0;
+  const maxX = window.innerWidth - toggleSize;
+  const minY = 0;
+  const maxY = window.innerHeight - toggleSize;
+  
+  x = Math.max(minX, Math.min(maxX, x));
+  y = Math.max(minY, Math.min(maxY, y));
+  
+  darkToggle.style.left = x + 'px';
+  darkToggle.style.top = y + 'px';
+  darkToggle.style.right = 'auto';
+  
+  return { x, y };
+}
+
+function checkEdgeMinimize(x) {
+  const edgeThreshold = 50;
+  const isAtEdge = x <= edgeThreshold || x >= (window.innerWidth - edgeThreshold);
+  
+  if (isAtEdge && !darkToggle.classList.contains('minimized')) {
+    darkToggle.classList.add('minimized');
+  } else if (!isAtEdge && darkToggle.classList.contains('minimized')) {
+    darkToggle.classList.remove('minimized');
+  }
+}
+
+function startDrag(e) {
+  if (darkToggle.classList.contains('minimized')) return;
+  
+  isDragging = true;
+  darkToggle.classList.add('dragging');
+  
+  // Get initial mouse/touch position
+  const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+  const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+  
+  dragStartX = clientX;
+  dragStartY = clientY;
+  
+  // Get initial toggle position
+  const rect = darkToggle.getBoundingClientRect();
+  toggleStartX = rect.left;
+  toggleStartY = rect.top;
+  
+  // Prevent default to avoid text selection
+  e.preventDefault();
+}
+
+function drag(e) {
+  if (!isDragging) return;
+  
+  const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+  const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+  
+  const deltaX = clientX - dragStartX;
+  const deltaY = clientY - dragStartY;
+  
+  const newX = toggleStartX + deltaX;
+  const newY = toggleStartY + deltaY;
+  
+  setTogglePosition(newX, newY);
+  checkEdgeMinimize(newX);
+  
+  e.preventDefault();
+}
+
+function endDrag(e) {
+  if (!isDragging) return;
+  
+  isDragging = false;
+  darkToggle.classList.remove('dragging');
+  
+  // Save final position
+  const rect = darkToggle.getBoundingClientRect();
+  saveTogglePosition(rect.left, rect.top);
+  
+  // Check if it was just a click (minimal movement)
+  const clientX = e.type.includes('touch') ? e.changedTouches[0].clientX : e.clientX;
+  const clientY = e.type.includes('touch') ? e.changedTouches[0].clientY : e.clientY;
+  
+  const deltaX = Math.abs(clientX - dragStartX);
+  const deltaY = Math.abs(clientY - dragStartY);
+  
+  // If minimal movement, treat as click for dark mode toggle
+  if (deltaX < 5 && deltaY < 5) {
     setDarkMode(!document.body.classList.contains('dark-theme'));
+  }
+}
+
+if (darkToggle) {
+  // Initialize dark mode and position
+  setDarkMode(getStoredDarkMode());
+  const savedPosition = getStoredTogglePosition();
+  setTogglePosition(savedPosition.x, savedPosition.y);
+  checkEdgeMinimize(savedPosition.x);
+  
+  // Mouse events
+  darkToggle.addEventListener('mousedown', startDrag);
+  document.addEventListener('mousemove', drag);
+  document.addEventListener('mouseup', endDrag);
+  
+  // Touch events
+  darkToggle.addEventListener('touchstart', startDrag, { passive: false });
+  document.addEventListener('touchmove', drag, { passive: false });
+  document.addEventListener('touchend', endDrag, { passive: false });
+  
+  // Handle window resize to keep toggle in bounds
+  window.addEventListener('resize', () => {
+    const rect = darkToggle.getBoundingClientRect();
+    const newPosition = setTogglePosition(rect.left, rect.top);
+    saveTogglePosition(newPosition.x, newPosition.y);
+    checkEdgeMinimize(newPosition.x);
+  });
+  
+  // Handle minimized state hover
+  darkToggle.addEventListener('mouseenter', () => {
+    if (darkToggle.classList.contains('minimized')) {
+      darkToggle.classList.remove('minimized');
+    }
+  });
+  
+  darkToggle.addEventListener('mouseleave', () => {
+    const rect = darkToggle.getBoundingClientRect();
+    checkEdgeMinimize(rect.left);
   });
 }
 
