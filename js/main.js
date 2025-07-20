@@ -1,35 +1,69 @@
-// Nav links: remove smooth scroll, use default anchor behavior
+// Nav links: handle navigation for both mobile and desktop
 const navLinks = document.querySelectorAll('.nav-link');
 const header = document.querySelector('header');
 
 navLinks.forEach(link => {
   link.addEventListener('click', function(e) {
-    // Only close mobile nav, do not prevent default or scroll manually
+    e.preventDefault();
+    
+    const href = link.getAttribute('href');
+    const targetSection = document.querySelector(href);
+    
+    if (targetSection) {
+      // Find the section index
+      const sectionIndex = sections.indexOf(targetSection);
+      if (sectionIndex !== -1) {
+        scrollToSection(sectionIndex);
+      }
+    }
+    
+    // Close mobile nav
     closeMobileNav();
   });
 });
 
-// Highlight active nav link on scroll
+// Highlight active nav link
 function setActiveNavLink() {
-  const scrollPos = window.scrollY + header.offsetHeight + 10;
-  let foundActive = false;
-  navLinks.forEach(link => {
-    const section = document.querySelector(link.getAttribute('href'));
-    if (section) {
-      const sectionTop = section.offsetTop;
-      const sectionBottom = sectionTop + section.offsetHeight;
-      if (!foundActive && scrollPos >= sectionTop && scrollPos < sectionBottom) {
+  const isMobile = window.innerWidth <= 768;
+  
+  if (isMobile) {
+    // On mobile: highlight based on current section index
+    navLinks.forEach((link, index) => {
+      if (index === currentSectionIndex) {
         link.classList.add('active');
-        foundActive = true;
       } else {
         link.classList.remove('active');
       }
-    } else {
-      link.classList.remove('active');
-    }
-  });
+    });
+  } else {
+    // On desktop: highlight based on scroll position
+    const scrollPos = window.scrollY + header.offsetHeight + 10;
+    let foundActive = false;
+    navLinks.forEach(link => {
+      const section = document.querySelector(link.getAttribute('href'));
+      if (section) {
+        const sectionTop = section.offsetTop;
+        const sectionBottom = sectionTop + section.offsetHeight;
+        if (!foundActive && scrollPos >= sectionTop && scrollPos < sectionBottom) {
+          link.classList.add('active');
+          foundActive = true;
+        } else {
+          link.classList.remove('active');
+        }
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
 }
-window.addEventListener('scroll', setActiveNavLink);
+
+// Update active nav link on scroll (desktop only)
+window.addEventListener('scroll', () => {
+  if (window.innerWidth > 768) {
+    setActiveNavLink();
+  }
+});
+
 window.addEventListener('DOMContentLoaded', setActiveNavLink);
 window.addEventListener('resize', setActiveNavLink);
 
@@ -272,19 +306,62 @@ function scrollToSection(index) {
   isPageSnapping = true;
   currentSectionIndex = index;
   
-  // Faster, smoother scrolling for mobile
   const isMobile = window.innerWidth <= 768;
-  const scrollBehavior = isMobile ? 'smooth' : 'smooth';
   
-  sections[index].scrollIntoView({ 
-    behavior: scrollBehavior, 
-    block: 'start',
-    inline: 'nearest'
-  });
+  if (isMobile) {
+    // On mobile: hide all sections and show only the target section
+    sections.forEach((section, i) => {
+      if (i === index) {
+        section.classList.add('active');
+      } else {
+        section.classList.remove('active');
+      }
+    });
+    
+    // Close mobile navigation
+    closeMobileNav();
+    
+    // Update active nav link
+    setActiveNavLink();
+    
+    setTimeout(() => { isPageSnapping = false; }, 300);
+  } else {
+    // On desktop: use smooth scrolling
+    const scrollBehavior = 'smooth';
+    
+    sections[index].scrollIntoView({ 
+      behavior: scrollBehavior, 
+      block: 'start',
+      inline: 'nearest'
+    });
+    
+    setTimeout(() => { isPageSnapping = false; }, 600);
+  }
+}
+
+// Mobile: Prevent all touch-based scrolling and navigation
+function preventMobileScroll(e) {
+  const isMobile = window.innerWidth <= 768;
+  if (!isMobile) return;
   
-  // Shorter timeout for more responsive feel on mobile
-  const timeout = isMobile ? 400 : 600;
-  setTimeout(() => { isPageSnapping = false; }, timeout);
+  // Allow dark toggle to work
+  if (e.target.closest('.dark-toggle')) {
+    return;
+  }
+  
+  // Prevent touch scrolling that could trigger section changes
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+// Mobile: Prevent wheel events that could trigger section changes
+function preventMobileWheel(e) {
+  const isMobile = window.innerWidth <= 768;
+  if (!isMobile) return;
+  
+  // Prevent wheel scrolling that could trigger section changes
+  e.preventDefault();
+  e.stopPropagation();
 }
 
 // Desktop only: Enhanced wheel event handling for slide scrolling
@@ -360,10 +437,59 @@ window.addEventListener('scroll', () => {
   });
 });
 
+// Mobile: Add touch event listeners to prevent scroll-based navigation
+function setupMobileScrollPrevention() {
+  const isMobile = window.innerWidth <= 768;
+  
+  if (isMobile) {
+    // Prevent touch scrolling on the document
+    document.addEventListener('touchmove', preventMobileScroll, { passive: false });
+    document.addEventListener('wheel', preventMobileWheel, { passive: false });
+    
+    // Add overflow hidden to body to prevent scrolling
+    document.body.style.overflow = 'hidden';
+    
+    // Ensure only the current section is visible
+    sections.forEach((section, i) => {
+      if (i === currentSectionIndex) {
+        section.classList.add('active');
+      } else {
+        section.classList.remove('active');
+      }
+    });
+  } else {
+    // Remove event listeners and restore scrolling on desktop
+    document.removeEventListener('touchmove', preventMobileScroll);
+    document.removeEventListener('wheel', preventMobileWheel);
+    document.body.style.overflow = '';
+    
+    // Show all sections for desktop scrolling
+    sections.forEach(section => {
+      section.classList.remove('active');
+    });
+  }
+}
+
 // Initialize current section index on page load
 window.addEventListener('DOMContentLoaded', () => {
   currentSectionIndex = 0;
+  setupMobileScrollPrevention();
+  
+  // On mobile: show the first section by default
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile && sections.length > 0) {
+    sections.forEach((section, i) => {
+      if (i === 0) {
+        section.classList.add('active');
+      } else {
+        section.classList.remove('active');
+      }
+    });
+  }
 });
+
+// Handle window resize to update mobile scroll prevention
+window.addEventListener('resize', setupMobileScrollPrevention);
 
 // === Contact Form Toggle ===
 const emailToggleBtn = document.getElementById('emailToggleBtn');

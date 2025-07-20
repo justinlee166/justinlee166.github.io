@@ -40,7 +40,7 @@ header {
   width: 100%;
   background: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  z-index: 1000;
+  z-index: 1001;
   height: auto;
   min-height: 56px;
 }
@@ -1984,13 +1984,20 @@ main > section,
   background-clip: padding-box;
 }
 
-/* Mobile: Disable slide scrolling, restore normal flow */
+/* Mobile: Disable slide scrolling, lock sections in place */
 @media (max-width: 768px) {
+  body {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+  
   main {
     scroll-snap-type: none;
-    overflow-y: auto;
-    height: auto;
-    min-height: 100vh;
+    overflow: hidden;
+    height: 100vh;
+    position: relative;
   }
   
   main > section,
@@ -2001,19 +2008,39 @@ main > section,
   .contact-section {
     scroll-snap-align: none;
     scroll-snap-stop: normal;
-    min-height: auto;
-    height: auto;
+    min-height: 100vh;
+    height: 100vh;
     padding-top: 100px; /* Space for fixed nav */
     padding-bottom: 4rem;
     padding-left: 1.5rem;
     padding-right: 1.5rem;
     margin-bottom: 0;
-    overflow-y: visible;
+    overflow-y: auto;
     border-bottom: none;
-    /* Allow natural content flow */
-    display: block;
+    /* Lock sections in place */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
     justify-content: flex-start;
-    align-items: stretch;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1;
+  }
+  
+  /* Show only the active section */
+  main > section.active,
+  .about-section.active,
+  .projects-section.active,
+  .skills-section.active,
+  .achievements-section.active,
+  .contact-section.active {
+    opacity: 1;
+    visibility: visible;
   }
   
   /* About section: extra top spacing */
