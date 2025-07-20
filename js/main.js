@@ -287,10 +287,14 @@ function scrollToSection(index) {
   setTimeout(() => { isPageSnapping = false; }, timeout);
 }
 
-// Enhanced wheel event handling for smoother mobile experience
+// Desktop only: Enhanced wheel event handling for slide scrolling
 window.addEventListener('wheel', (e) => {
   const isMobile = window.innerWidth <= 768;
-  const throttleTime = isMobile ? 200 : 300;
+  
+  // Disable forced scrolling on mobile - allow natural scroll
+  if (isMobile) return;
+  
+  const throttleTime = 300;
   
   // Prevent multiple triggers on single scroll gesture
   const now = Date.now();
@@ -309,11 +313,14 @@ window.addEventListener('wheel', (e) => {
   e.preventDefault();
 }, { passive: false });
 
-// Enhanced keyboard navigation with mobile considerations
+// Desktop only: Enhanced keyboard navigation
 window.addEventListener('keydown', (e) => {
-  if (isPageSnapping) return;
-  
   const isMobile = window.innerWidth <= 768;
+  
+  // Disable forced keyboard scrolling on mobile
+  if (isMobile) return;
+  
+  if (isPageSnapping) return;
   
   if (["PageDown", "ArrowDown"].includes(e.key)) {
     if (currentSectionIndex < sections.length - 1) {
@@ -328,8 +335,13 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// Update current section index on scroll (for mobile scroll snapping)
+// Desktop only: Update current section index on scroll
 window.addEventListener('scroll', () => {
+  const isMobile = window.innerWidth <= 768;
+  
+  // Disable section tracking on mobile
+  if (isMobile) return;
+  
   if (isPageSnapping) return;
   
   const scrollY = window.scrollY;

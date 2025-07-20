@@ -1984,15 +1984,13 @@ main > section,
   background-clip: padding-box;
 }
 
-/* Mobile-specific: Enhanced spacing and smoother scrolling */
+/* Mobile: Disable slide scrolling, restore normal flow */
 @media (max-width: 768px) {
-  html {
-    scroll-behavior: smooth;
-  }
-  
   main {
-    scroll-snap-type: y mandatory;
-    scroll-padding-top: 80px;
+    scroll-snap-type: none;
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
   }
   
   main > section,
@@ -2001,32 +1999,26 @@ main > section,
   .skills-section,
   .achievements-section,
   .contact-section {
-    min-height: 100vh;
-    height: 100vh;
-    padding-top: 120px; /* Extra space for nav bar + breathing room */
-    padding-bottom: 3rem;
+    scroll-snap-align: none;
+    scroll-snap-stop: normal;
+    min-height: auto;
+    height: auto;
+    padding-top: 100px; /* Space for fixed nav */
+    padding-bottom: 4rem;
     padding-left: 1.5rem;
     padding-right: 1.5rem;
     margin-bottom: 0;
-    overflow-y: auto;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-    /* Ensure sections are visually distinct */
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-  }
-  
-  /* Dark mode border */
-  body.dark-theme .about-section,
-  body.dark-theme .projects-section,
-  body.dark-theme .skills-section,
-  body.dark-theme .achievements-section,
-  body.dark-theme .contact-section {
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    overflow-y: visible;
+    border-bottom: none;
+    /* Allow natural content flow */
+    display: block;
+    justify-content: flex-start;
+    align-items: stretch;
   }
   
   /* About section: extra top spacing */
   .about-section {
-    padding-top: 140px;
+    padding-top: 120px;
   }
 }
 
@@ -2038,14 +2030,14 @@ main > section,
   .skills-section,
   .achievements-section,
   .contact-section {
-    padding-top: 100px;
-    padding-bottom: 2rem;
+    padding-top: 90px;
+    padding-bottom: 3rem;
     padding-left: 1rem;
     padding-right: 1rem;
   }
   
   .about-section {
-    padding-top: 120px;
+    padding-top: 110px;
   }
 }
 
