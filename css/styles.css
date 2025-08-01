@@ -1091,13 +1091,16 @@ body.dark-theme .footer-link:hover svg, body.dark-theme .footer-link:focus svg {
 /* 1. Remove empty rulesets */
 /* (No empty rulesets remain) */
 
-/* 2. Scroll snap on main */
+/* 2. Main container - let JavaScript handle scrolling */
 main {
-  scroll-snap-type: y mandatory;
+  /* Remove scroll-snap-type: y mandatory; - let JavaScript handle it */
   scroll-padding-top: 30px;
+  overflow-y: auto;
+  height: 100vh;
+  width: 100%;
 }
 
-/* 3. Full-screen sections with scroll snap */
+/* 3. Full-screen sections - let JavaScript handle scrolling */
 .hero,
 .projects-section,
 .skills-section,
@@ -1105,7 +1108,7 @@ main {
 .achievements-section,
 .contact-section {
   min-height: calc(100vh - 80px);
-  scroll-snap-align: start;
+  /* Remove scroll-snap-align: start; - let JavaScript handle it */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1942,14 +1945,12 @@ body.dark-theme .nav-link.active::after {
   z-index: 1;
 } 
 
-/* === Enhanced Mobile Full-Screen Sections === */
 main {
-  scroll-snap-type: y mandatory;
+  /* Remove scroll-snap-type: y mandatory; - let JavaScript handle it */
   overflow-y: auto;
   height: 100vh;
   width: 100%;
 }
-
 /* Desktop and large screens: standard behavior */
 main > section,
 .about-section,
@@ -1957,8 +1958,8 @@ main > section,
 .skills-section,
 .achievements-section,
 .contact-section {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  /* Remove scroll-snap-align: start; - let JavaScript handle it */
+  /* Remove scroll-snap-stop: always; - let JavaScript handle it */
   min-height: 100vh;
   height: 100vh;
   display: flex;
@@ -1968,7 +1969,6 @@ main > section,
   box-sizing: border-box;
   position: relative;
   width: 100%;
-  /* Remove overflow-y: auto - let main handle scrolling */
   overflow-y: visible;
   background-clip: padding-box;
 }
