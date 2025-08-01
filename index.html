@@ -14,6 +14,16 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <!-- Scroll Progress Indicator -->
+  <div class="scroll-progress" aria-hidden="true">
+    <div class="scroll-progress-bar"></div>
+  </div>
+  
+  <!-- Scroll Direction Indicator -->
+  <div class="scroll-direction-indicator" aria-hidden="true">
+    <span class="direction-text"></span>
+  </div>
+  
   <!-- Header Navigation -->
   <header>
     <nav class="navbar" aria-label="Main Navigation">
@@ -35,19 +45,19 @@
 
   <main>
     <!-- About Me Section -->
-    <section id="about" class="about-section" tabindex="-1" aria-label="About Me" data-animate="fade-up">
-      <h1 class="about-heading">Hey, My Name Is Justin</h1>
+    <section id="about" class="about-section" tabindex="-1" aria-label="About Me">
+      <h1 class="about-heading scroll-fade-in">Hey, My Name Is Justin</h1>
       
-      <p class="about-bio">
+      <p class="about-bio scroll-fade-in">
         Aspiring Software Engineer passionate about building AI-driven tools and intuitive, data-powered solutions.
       </p>
       
       <div class="timeline-container">
-        <h2 class="timeline-title">My Journey</h2>
+        <h2 class="timeline-title scroll-fade-in">My Journey</h2>
         <div class="timeline-horizontal">
           <div class="timeline-line"></div>
           
-          <div class="timeline-milestone milestone-above">
+          <div class="timeline-milestone milestone-above scroll-slide-left">
             <div class="milestone-content">
               <h3 class="milestone-company">Stony Brook University</h3>
               <p class="milestone-role">B.S./M.S. Applied Mathematics, B.S. Computer Science</p>
@@ -56,7 +66,7 @@
             </div>
           </div>
           
-          <div class="timeline-milestone milestone-below">
+          <div class="timeline-milestone milestone-below scroll-slide-right">
             <div class="milestone-content">
               <h3 class="milestone-company">Desung Inc.</h3>
               <p class="milestone-role">Software Engineer</p>
@@ -65,7 +75,7 @@
             </div>
           </div>
           
-          <div class="timeline-milestone milestone-above">
+          <div class="timeline-milestone milestone-above scroll-slide-left">
             <div class="milestone-content">
               <h3 class="milestone-company">Acadia Analytics</h3>
               <p class="milestone-role">Quantitative Researcher Intern</p>
@@ -78,12 +88,12 @@
     </section>
 
     <!-- Projects Section -->
-    <section id="projects" class="projects-section" tabindex="-1" aria-label="Projects" data-animate="fade-up">
+    <section id="projects" class="projects-section" tabindex="-1" aria-label="Projects">
       <h2>Projects</h2>
       <div class="projects-grid">
 
         <!-- Pairs Trading Algorithm -->
-        <a href="#" class="project-card" data-wip="true" tabindex="0" aria-label="WIP Project: LLM Trading Bot" data-animate="fade-up">
+        <a href="#" class="project-card scroll-scale-in" data-wip="true" tabindex="0" aria-label="WIP Project: LLM Trading Bot">
           <h3 class="project-title">Pairs Trading Algorithm</h3>
           <div class="project-tags">
             <span class="tag">Python</span>
@@ -97,7 +107,7 @@
         </a>
 
         <!-- LLM Trading Bot (WIP) -->
-        <a href="#" class="project-card" data-wip="true" tabindex="0" aria-label="WIP Project: LLM Trading Bot" data-animate="fade-up">
+        <a href="#" class="project-card scroll-scale-in" data-wip="true" tabindex="0" aria-label="WIP Project: LLM Trading Bot">
           <h3 class="project-title">LLM Trading Bot</h3>
           <div class="project-tags">
             <span class="tag">OpenAI API</span>
@@ -111,7 +121,7 @@
         </a>
 
         <!-- Portfolio Website -->
-        <a href="https://github.com/justinlee166/justinlee166.github.io" class="project-card" target="_blank" rel="noopener" tabindex="0" aria-label="Portfolio Website on GitHub" data-animate="fade-up">
+        <a href="https://github.com/justinlee166/justinlee166.github.io" class="project-card scroll-scale-in" target="_blank" rel="noopener" tabindex="0" aria-label="Portfolio Website on GitHub">
           <h3 class="project-title">Portfolio Website</h3>
           <div class="project-tags">
             <span class="tag">HTML</span>
@@ -125,21 +135,21 @@
         </a>
 
         <!-- Machine Learning Pipeline (WIP) -->
-        <a href="#" class="project-card" data-wip="true" tabindex="0" aria-label="WIP Project: ML Pipeline" data-animate="fade-up">
+        <a href="#" class="project-card" data-wip="true" tabindex="0" aria-label="WIP Project: ML Pipeline">
           <h3 class="project-title">TBD</h3>
           <p class="project-desc">
           </p>
         </a>
 
         <!-- Machine Learning Pipeline (WIP) -->
-        <a href="#" class="project-card" data-wip="true" tabindex="0" aria-label="WIP Project: ML Pipeline" data-animate="fade-up">
+        <a href="#" class="project-card" data-wip="true" tabindex="0" aria-label="WIP Project: ML Pipeline">
           <h3 class="project-title">TBD</h3>
           <p class="project-desc">
           </p>
         </a>
 
         <!-- Data Visualization Tool -->
-        <a href="#" class="project-card" data-wip="true" tabindex="0" aria-label="WIP Project: ML Pipeline" data-animate="fade-up">
+        <a href="#" class="project-card" data-wip="true" tabindex="0" aria-label="WIP Project: ML Pipeline">
           <h3 class="project-title">TBD</h3>
           <p class="project-desc">
           </p>
@@ -148,11 +158,11 @@
     </section>
 
     <!-- Skills Section -->
-    <section id="skills" class="skills-section" tabindex="-1" aria-label="Skills" data-animate="fade-up">
+    <section id="skills" class="skills-section" tabindex="-1" aria-label="Skills">
       <h2>Skills</h2>
       <div class="skills-grid">
         <!-- Machine Learning & AI -->
-        <div class="skill-card" data-animate="fade-up">
+        <div class="skill-card scroll-scale-in">
           <h3 class="skill-title">Machine Learning & AI</h3>
           <div class="skill-tags">
             <span class="tag">scikit-learn</span>
@@ -162,7 +172,7 @@
           </div>
         </div>
         <!-- Data Engineering -->
-        <div class="skill-card" data-animate="fade-up">
+        <div class="skill-card scroll-scale-in">
           <h3 class="skill-title">Data Engineering</h3>
           <div class="skill-tags">
             <span class="tag">Python</span>
@@ -173,7 +183,7 @@
           </div>
         </div>
         <!-- Front-End Development -->
-        <div class="skill-card" data-animate="fade-up">
+        <div class="skill-card scroll-scale-in">
           <h3 class="skill-title">Front-End Development</h3>
           <div class="skill-tags">
             <span class="tag">HTML</span>
@@ -184,7 +194,7 @@
           </div>
         </div>
         <!-- Visualization & Tools -->
-        <div class="skill-card" data-animate="fade-up">
+        <div class="skill-card scroll-scale-in">
           <h3 class="skill-title">Visualization & Tools</h3>
           <div class="skill-tags">
             <span class="tag">Matplotlib</span>
@@ -194,7 +204,7 @@
           </div>
         </div>
         <!-- Backend Development -->
-        <div class="skill-card" data-animate="fade-up">
+        <div class="skill-card scroll-scale-in">
           <h3 class="skill-title">Back-End Development</h3>
           <div class="skill-tags">
             <span class="tag">Node.js</span>
@@ -205,7 +215,7 @@
           </div>
         </div>
         <!-- DevOps & CI/CD -->
-        <div class="skill-card" data-animate="fade-up">
+        <div class="skill-card scroll-scale-in">
           <h3 class="skill-title">DevOps & CI/CD</h3>
           <div class="skill-tags">
             <span class="tag">GitHub Actions</span>
@@ -219,7 +229,7 @@
 
 
     <!-- Achievements & Extra Curricular Section -->
-    <section id="achievements" class="achievements-section" tabindex="-1" aria-label="Achievements and Extra Curricular" data-animate="fade-up">
+    <section id="achievements" class="achievements-section" tabindex="-1" aria-label="Achievements and Extra Curricular">
       <h2>Achievements & Extra Curricular</h2>
       <div class="achievement-grid">
         <div class="achievement-card">
@@ -250,7 +260,7 @@
     </section>
 
     <!-- Contact Me Section -->
-    <section id="contact" class="contact-section" tabindex="-1" aria-label="Contact Me" data-animate="fade-up">
+    <section id="contact" class="contact-section" tabindex="-1" aria-label="Contact Me">
       <h2>Contact Me</h2>
       
       <div class="contact-buttons">

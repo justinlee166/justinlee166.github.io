@@ -22,34 +22,7 @@ navLinks.forEach(link => {
   });
 });
 
-// Highlight active nav link
-function setActiveNavLink() {
-  const scrollPos = window.scrollY + header.offsetHeight + 10;
-  let foundActive = false;
-  navLinks.forEach(link => {
-    const section = document.querySelector(link.getAttribute('href'));
-    if (section) {
-      const sectionTop = section.offsetTop;
-      const sectionBottom = sectionTop + section.offsetHeight;
-      if (!foundActive && scrollPos >= sectionTop && scrollPos < sectionBottom) {
-        link.classList.add('active');
-        foundActive = true;
-      } else {
-        link.classList.remove('active');
-      }
-    } else {
-      link.classList.remove('active');
-    }
-  });
-}
-
-// Update active nav link on scroll
-window.addEventListener('scroll', () => {
-  setActiveNavLink();
-});
-
-window.addEventListener('DOMContentLoaded', setActiveNavLink);
-window.addEventListener('resize', setActiveNavLink);
+// Navigation tracking now handled by ScrollManager class
 
 // Hamburger menu logic
 const navToggle = document.querySelector('.nav-toggle');
@@ -82,24 +55,7 @@ window.addEventListener('resize', () => {
   }
 });
 
-// === Fade-in/Slide-up Animations ===
-function animateOnScroll() {
-  const animatedEls = document.querySelectorAll('[data-animate]');
-  const observer = new window.IntersectionObserver((entries, obs) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate-in');
-        obs.unobserve(entry.target);
-      }
-    });
-  }, {
-    threshold: 0.15
-  });
-  animatedEls.forEach(el => {
-    observer.observe(el);
-  });
-}
-window.addEventListener('DOMContentLoaded', animateOnScroll);
+// Old animation system removed - now handled by ScrollManager
 
 // === Dark Mode Toggle ===
 const darkToggle = document.querySelector('.dark-toggle');
@@ -278,153 +234,247 @@ if (darkToggle) {
   });
 }
 
-// === Enhanced Page-like Section Scrolling for Mobile ===
-const sectionIds = ['about', 'projects', 'skills', 'achievements', 'contact'];
-const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
-let currentSectionIndex = 0;
-let isPageSnapping = false;
-let lastScrollTime = 0;
-
-function scrollToSection(index) {
-  if (index < 0 || index >= sections.length) return;
-  isPageSnapping = true;
-  currentSectionIndex = index;
+// === Enhanced Page-like Section Scrolling with Unified Scroll Manager ===
+class ScrollManager {
+  constructor() {
+    this.sectionIds = ['about', 'projects', 'skills', 'achievements', 'contact'];
+    this.sections = this.sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+    this.currentSectionIndex = 0;
+    this.isPageSnapping = false;
+    this.lastScrollTime = 0;
+    this.wheelTimeout = null;
+    this.scrollProgressBar = document.querySelector('.scroll-progress-bar');
+    this.scrollDirectionIndicator = document.querySelector('.scroll-direction-indicator');
+    this.directionText = document.querySelector('.direction-text');
+    
+    this.init();
+  }
   
-  const isMobile = window.innerWidth <= 768;
+  init() {
+    this.setupEventListeners();
+    this.updateScrollProgress();
+    // Initial nav link setup
+    this.setActiveNavLink();
+  }
   
-  if (isMobile) {
-    // On mobile: scroll to the target section
-    sections[index].scrollIntoView({ 
-      behavior: 'smooth', 
-      block: 'start',
-      inline: 'nearest'
+  setupEventListeners() {
+    // Wheel event with improved performance
+    window.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
+    
+    // Keyboard navigation
+    window.addEventListener('keydown', this.handleKeydown.bind(this));
+    
+    // Scroll tracking
+    window.addEventListener('scroll', this.handleScroll.bind(this));
+    
+    // Mobile scroll prevention and initial setup
+    window.addEventListener('DOMContentLoaded', () => {
+      this.currentSectionIndex = 0;
+      this.setupMobileScrollPrevention();
+      this.setActiveNavLink();
     });
     
-    // Close mobile navigation
-    closeMobileNav();
+    window.addEventListener('resize', () => {
+      this.setupMobileScrollPrevention();
+      this.setActiveNavLink();
+    });
+  }
+  
+  handleWheel(e) {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) return;
+    
+    // Use requestAnimationFrame for smoother performance
+    if (this.wheelTimeout) {
+      cancelAnimationFrame(this.wheelTimeout);
+    }
+    
+    this.wheelTimeout = requestAnimationFrame(() => {
+      const throttleTime = 200;
+      const now = Date.now();
+      if (now - this.lastScrollTime < throttleTime) return;
+      this.lastScrollTime = now;
+      
+      if (this.isPageSnapping) return;
+      
+      const direction = e.deltaY > 0 ? 1 : -1;
+      let nextIndex = this.currentSectionIndex + direction;
+      
+      if (nextIndex < 0 || nextIndex >= this.sections.length) return;
+      
+      this.scrollToSection(nextIndex);
+      this.showScrollDirection(direction > 0 ? 'Down' : 'Up');
+      e.preventDefault();
+    });
+  }
+  
+  handleKeydown(e) {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) return;
+    
+    if (this.isPageSnapping) return;
+    
+    if (["PageDown", "ArrowDown"].includes(e.key)) {
+      if (this.currentSectionIndex < this.sections.length - 1) {
+        this.scrollToSection(this.currentSectionIndex + 1);
+        this.showScrollDirection('Down');
+        e.preventDefault();
+      }
+    } else if (["PageUp", "ArrowUp"].includes(e.key)) {
+      if (this.currentSectionIndex > 0) {
+        this.scrollToSection(this.currentSectionIndex - 1);
+        this.showScrollDirection('Up');
+        e.preventDefault();
+      }
+    }
+  }
+  
+  handleScroll() {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) return;
+    
+    if (this.isPageSnapping) return;
+    
+    this.updateScrollProgress();
+    this.updateCurrentSection();
+    this.handleScrollAnimations();
+  }
+  
+  updateScrollProgress() {
+    if (!this.scrollProgressBar) return;
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercent = (scrollTop / docHeight) * 100;
+    
+    this.scrollProgressBar.style.transform = `scaleX(${scrollPercent / 100})`;
+  }
+  
+  updateCurrentSection() {
+    const scrollY = window.scrollY;
+    const viewportHeight = window.innerHeight;
+    
+    this.sections.forEach((section, index) => {
+      const rect = section.getBoundingClientRect();
+      const sectionTop = rect.top + scrollY;
+      const sectionCenter = sectionTop + (rect.height / 2);
+      const viewportCenter = scrollY + (viewportHeight / 2);
+      
+      if (Math.abs(sectionCenter - viewportCenter) < viewportHeight / 3) {
+        this.currentSectionIndex = index;
+      }
+    });
     
     // Update active nav link
-    setActiveNavLink();
+    this.setActiveNavLink();
+  }
+  
+  setActiveNavLink() {
+    const scrollPos = window.scrollY + (document.querySelector('header')?.offsetHeight || 0) + 10;
+    let foundActive = false;
+    const navLinks = document.querySelectorAll('.nav-link');
     
-    setTimeout(() => { isPageSnapping = false; }, 600);
-  } else {
-    // On desktop: use smooth scrolling
-    const scrollBehavior = 'smooth';
-    
-    sections[index].scrollIntoView({ 
-      behavior: scrollBehavior, 
-      block: 'start',
-      inline: 'nearest'
+    navLinks.forEach(link => {
+      const section = document.querySelector(link.getAttribute('href'));
+      if (section) {
+        const sectionTop = section.offsetTop;
+        const sectionBottom = sectionTop + section.offsetHeight;
+        if (!foundActive && scrollPos >= sectionTop && scrollPos < sectionBottom) {
+          link.classList.add('active');
+          foundActive = true;
+        } else {
+          link.classList.remove('active');
+        }
+      } else {
+        link.classList.remove('active');
+      }
     });
+  }
+  
+  showScrollDirection(direction) {
+    if (!this.scrollDirectionIndicator || !this.directionText) return;
     
-    setTimeout(() => { isPageSnapping = false; }, 600);
-  }
-}
-
-// Mobile: Prevent wheel events that could trigger section changes
-function preventMobileWheel(e) {
-  const isMobile = window.innerWidth <= 768;
-  if (!isMobile) return;
-  
-  // Prevent wheel scrolling that could trigger section changes
-  e.preventDefault();
-  e.stopPropagation();
-}
-
-// Desktop only: Enhanced wheel event handling for slide scrolling
-window.addEventListener('wheel', (e) => {
-  const isMobile = window.innerWidth <= 768;
-  
-  // Disable forced scrolling on mobile - allow natural scroll
-  if (isMobile) return;
-  
-  const throttleTime = 300;
-  
-  // Prevent multiple triggers on single scroll gesture
-  const now = Date.now();
-  if (now - lastScrollTime < throttleTime) return;
-  lastScrollTime = now;
-  
-  if (isPageSnapping) return;
-  
-  const direction = e.deltaY > 0 ? 1 : -1; // 1 = down, -1 = up
-  let nextIndex = currentSectionIndex + direction;
-  
-  // Respect bounds: don't scroll beyond first/last section
-  if (nextIndex < 0 || nextIndex >= sections.length) return;
-  
-  scrollToSection(nextIndex);
-  e.preventDefault();
-}, { passive: false });
-
-// Desktop only: Enhanced keyboard navigation
-window.addEventListener('keydown', (e) => {
-  const isMobile = window.innerWidth <= 768;
-  
-  // Disable forced keyboard scrolling on mobile
-  if (isMobile) return;
-  
-  if (isPageSnapping) return;
-  
-  if (["PageDown", "ArrowDown"].includes(e.key)) {
-    if (currentSectionIndex < sections.length - 1) {
-      scrollToSection(currentSectionIndex + 1);
-      e.preventDefault();
-    }
-  } else if (["PageUp", "ArrowUp"].includes(e.key)) {
-    if (currentSectionIndex > 0) {
-      scrollToSection(currentSectionIndex - 1);
-      e.preventDefault();
-    }
-  }
-});
-
-// Desktop only: Update current section index on scroll
-window.addEventListener('scroll', () => {
-  const isMobile = window.innerWidth <= 768;
-  
-  // Disable section tracking on mobile
-  if (isMobile) return;
-  
-  if (isPageSnapping) return;
-  
-  const scrollY = window.scrollY;
-  const viewportHeight = window.innerHeight;
-  
-  // Determine which section is most visible
-  sections.forEach((section, index) => {
-    const rect = section.getBoundingClientRect();
-    const sectionTop = rect.top + scrollY;
-    const sectionCenter = sectionTop + (rect.height / 2);
-    const viewportCenter = scrollY + (viewportHeight / 2);
+    this.directionText.textContent = direction;
+    this.scrollDirectionIndicator.classList.add('show');
     
-    if (Math.abs(sectionCenter - viewportCenter) < viewportHeight / 3) {
-      currentSectionIndex = index;
-    }
-  });
-});
-
-// Mobile: Add wheel event listener to prevent section-to-section navigation
-function setupMobileScrollPrevention() {
-  const isMobile = window.innerWidth <= 768;
+    setTimeout(() => {
+      this.scrollDirectionIndicator.classList.remove('show');
+    }, 1000);
+  }
   
-  if (isMobile) {
-    // Prevent wheel scrolling that could trigger section changes
-    document.addEventListener('wheel', preventMobileWheel, { passive: false });
-  } else {
-    // Remove event listeners and restore scrolling on desktop
-    document.removeEventListener('wheel', preventMobileWheel);
+  scrollToSection(index) {
+    if (index < 0 || index >= this.sections.length) return;
+    
+    this.isPageSnapping = true;
+    this.currentSectionIndex = index;
+    
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+      this.sections[index].scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
+      });
+      
+      closeMobileNav();
+      this.setActiveNavLink();
+      setTimeout(() => { this.isPageSnapping = false; }, 600);
+    } else {
+      this.sections[index].scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
+      });
+      
+      setTimeout(() => { this.isPageSnapping = false; }, 600);
+    }
+  }
+  
+  setupMobileScrollPrevention() {
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+      document.addEventListener('wheel', this.preventMobileWheel.bind(this), { passive: false });
+    } else {
+      document.removeEventListener('wheel', this.preventMobileWheel.bind(this));
+    }
+  }
+  
+  preventMobileWheel(e) {
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  
+  handleScrollAnimations() {
+    const animatedElements = document.querySelectorAll('.scroll-fade-in, .scroll-scale-in, .scroll-slide-left, .scroll-slide-right');
+    
+    animatedElements.forEach(element => {
+      const rect = element.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      // Trigger animation when element is 20% visible
+      if (rect.top < windowHeight * 0.8 && rect.bottom > 0) {
+        element.classList.add('visible');
+      }
+    });
   }
 }
 
-// Initialize current section index on page load
-window.addEventListener('DOMContentLoaded', () => {
-  currentSectionIndex = 0;
-  setupMobileScrollPrevention();
-});
+// Initialize scroll manager
+const scrollManager = new ScrollManager();
 
-// Handle window resize to update mobile scroll prevention
-window.addEventListener('resize', setupMobileScrollPrevention);
+function scrollToSection(index) {
+  // Use the scroll manager's method
+  scrollManager.scrollToSection(index);
+}
+
+// Mobile wheel prevention is now handled by the ScrollManager class
+
+// Event listeners are now handled by the ScrollManager class
 
 // === Contact Form Toggle ===
 const emailToggleBtn = document.getElementById('emailToggleBtn');
