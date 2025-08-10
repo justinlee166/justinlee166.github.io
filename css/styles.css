@@ -1091,12 +1091,11 @@ body.dark-theme .footer-link:hover svg, body.dark-theme .footer-link:focus svg {
 /* 1. Remove empty rulesets */
 /* (No empty rulesets remain) */
 
-/* 2. Main container - let JavaScript handle scrolling */
+/* 2. Main container - use document/window as the scroll container */
 main {
-  /* Remove scroll-snap-type: y mandatory; - let JavaScript handle it */
   scroll-padding-top: 30px;
-  overflow-y: auto;
-  height: 100vh;
+  overflow: visible;
+  height: auto;
   width: 100%;
 }
 
@@ -1107,14 +1106,13 @@ main {
 .cv-section,
 .achievements-section,
 .contact-section {
-  min-height: calc(100vh - 80px);
-  /* Remove scroll-snap-align: start; - let JavaScript handle it */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 2.5rem 1.5rem 2.5rem 1.5rem;
-  margin-bottom: 2.5rem;
+  margin: 0;
 }
 
 /* 4. Hero Section Vertical Card Layout */
@@ -1315,8 +1313,7 @@ body.dark-theme .contact-section h2 {
 
 /* 8. Achievements/Extra Curricular Section */
 .achievements-section {
-  min-height: calc(100vh - 80px);
-  scroll-snap-align: start;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1446,14 +1443,13 @@ body.dark-theme .achievement-card {
 .cv-section,
 .achievements-section,
 .contact-section {
-  min-height: calc(100vh - 80px);
-  scroll-snap-align: start;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 2.5rem 1.5rem 2.5rem 1.5rem;
-  margin-bottom: 2.5rem;
+  margin: 0;
 }
 
 /* Remove margin-bottom from last section to avoid extra space at end */
@@ -1468,14 +1464,13 @@ body.dark-theme .achievement-card {
 .cv-section,
 .achievements-section,
 .contact-section {
-  min-height: calc(100vh - 80px);
-  scroll-snap-align: start;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 3rem 1.5rem 3rem 1.5rem;
-  margin-bottom: 5rem;
+  margin: 0;
   position: relative;
 }
 
@@ -1521,14 +1516,13 @@ body.dark-theme .cv-section {
 
 /* About Me section redesign */
 .about-section {
-  min-height: calc(100vh - 80px);
-  scroll-snap-align: start;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 6rem 1.5rem 3rem 1.5rem;
-  margin-bottom: 5rem;
+  padding: 4rem 1.5rem 3rem 1.5rem;
+  margin: 0;
   position: relative;
   text-align: center;
 }
@@ -1946,9 +1940,8 @@ body.dark-theme .nav-link.active::after {
 } 
 
 main {
-  /* Remove scroll-snap-type: y mandatory; - let JavaScript handle it */
-  overflow-y: auto;
-  height: 100vh;
+  overflow: visible;
+  height: auto;
   width: 100%;
 }
 /* Desktop and large screens: standard behavior */
@@ -1976,16 +1969,15 @@ main > section,
 /* Mobile: Allow scrolling within sections, prevent section-to-section navigation */
 @media (max-width: 768px) {
   body {
-    /* Remove overflow: auto - let main handle scrolling */
-    overflow: hidden;
     position: relative;
     width: 100%;
-    height: 100%;
+    height: auto;
+    overflow-y: auto;
   }
   
   main {
     scroll-snap-type: none;
-    overflow: auto;
+    overflow: visible;
     height: auto;
     position: relative;
   }
@@ -1996,31 +1988,28 @@ main > section,
   .skills-section,
   .achievements-section,
   .contact-section {
-    scroll-snap-align: none;
-    scroll-snap-stop: normal;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
     min-height: 100vh;
-    height: auto;
-    padding-top: 100px; /* Space for fixed nav */
-    padding-bottom: 4rem;
+    height: 100vh;
+    padding-top: 80px; /* Space for fixed nav */
+    padding-bottom: 0;
     padding-left: 1.5rem;
     padding-right: 1.5rem;
-    margin-bottom: 0;
-    overflow-y: visible;
+    margin: 0;
+    overflow: hidden;
     border-bottom: none;
-    /* Normal document flow */
     position: relative;
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
-    /* Allow scrolling within the section */
-    -webkit-overflow-scrolling: touch;
   }
   
   /* About section: extra top spacing */
   .about-section {
-    padding-top: 120px;
+    padding-top: 96px;
   }
 }
 
@@ -2033,7 +2022,7 @@ main > section,
   .achievements-section,
   .contact-section {
     padding-top: 90px;
-    padding-bottom: 3rem;
+    padding-bottom: 0;
     padding-left: 1rem;
     padding-right: 1rem;
   }
@@ -2049,7 +2038,7 @@ main > section,
 .skills-section,
 .achievements-section,
 .contact-section {
-  margin-bottom: 0;
+  margin: 0;
   border-bottom: none;
 }
 
@@ -2073,6 +2062,203 @@ html {
 main {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+}
+
+/* === Unified Page Scrolling & Snap (Overrides) === */
+:root { --header-height: 80px; }
+html, body { height: 100%; }
+/* Apply scroll snap to the root scroller for broad browser compatibility */
+html { scroll-snap-type: y mandatory; scroll-padding-top: var(--header-height); }
+body {
+  overflow-y: auto !important;
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: var(--header-height);
+}
+
+/* Only one scrollbar: window. No inner scroll on main */
+main {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 100%;
+}
+
+/* Each section is a full page and snaps cleanly */
+main > section,
+.about-section,
+.projects-section,
+.skills-section,
+.achievements-section,
+.contact-section {
+  min-height: 100vh !important;
+  height: auto !important;
+  scroll-snap-align: start !important;
+  scroll-snap-stop: always !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+
+/* Account for fixed header when jumping via anchors */
+.about-section,
+.projects-section,
+.skills-section,
+.achievements-section,
+.contact-section {
+  scroll-margin-top: var(--header-height);
+}
+
+/* Mobile keeps the same behavior */
+@media (max-width: 768px) {
+  body { overflow-y: auto !important; }
+}
+
+/* --- Defined boundaries and transition-only gutters --- */
+/* Disable any always-on section dividers */
+.projects-section::before,
+.projects-section::after,
+.skills-section::before,
+.skills-section::after,
+.cv-section::before,
+.cv-section::after,
+.achievements-section::before,
+.achievements-section::after,
+.about-section::before,
+.about-section::after,
+.contact-section::before,
+.contact-section::after {
+  content: none !important;
+}
+
+/* Variables for gutter sizing */
+:root {
+  /* Larger, responsive transition-only gutters */
+  --section-gutter-thickness: clamp(40px, 8svh, 120px);
+  --section-gutter-inset: 8%;
+  /* Layered divider tokens */
+  --section-divider-width: clamp(1px, 0.25vw, 2px);
+  --section-divider-gap: clamp(2px, 0.5vw, 6px);
+  --section-divider-strong: rgba(148, 163, 184, 0.92); /* slate-300-ish */
+  --section-divider-glow: rgba(99, 102, 241, 0.22);   /* indigo glow */
+  --section-gutter-fade: rgba(249, 249, 249, 0.96);
+}
+
+body.dark-theme {
+  --section-divider-strong: rgba(165, 180, 252, 0.9); /* indigo-200-ish */
+  --section-divider-glow: rgba(99, 102, 241, 0.28);
+  --section-gutter-fade: rgba(24, 26, 35, 0.88);
+}
+
+/* Transition-only gutters and layered borders: bottom (leaving) */
+body.is-scrolling .about-section::before,
+body.is-scrolling .projects-section::before,
+body.is-scrolling .skills-section::before,
+body.is-scrolling .cv-section::before,
+body.is-scrolling .achievements-section::before,
+body.is-scrolling .contact-section::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--section-gutter-thickness);
+  pointer-events: none;
+  z-index: 3;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  /* Layer order: glow (thicker) + two crisp lines separated by a gap, over a fade gutter */
+  background-image:
+    /* soft outer glow */
+    linear-gradient(90deg, transparent, var(--section-divider-glow) 50%, transparent),
+    /* lower crisp line at seam */
+    linear-gradient(90deg, transparent, var(--section-divider-strong) 50%, transparent),
+    /* fade gutter */
+    linear-gradient(to top, var(--section-gutter-fade) 0%, rgba(0,0,0,0) 80%);
+  background-size:
+    calc(100% - (2 * var(--section-gutter-inset))) calc(2 * var(--section-divider-width)),
+    calc(100% - (2 * var(--section-gutter-inset))) var(--section-divider-width),
+    100% 100%;
+  background-position:
+    center calc(100% - var(--section-divider-width)),
+    center calc(100% - var(--section-divider-gap) - (2 * var(--section-divider-width))),
+    left bottom;
+}
+
+/* Transition-only gutters and layered borders: top (entering) */
+body.is-scrolling .about-section::after,
+body.is-scrolling .projects-section::after,
+body.is-scrolling .skills-section::after,
+body.is-scrolling .cv-section::after,
+body.is-scrolling .achievements-section::after,
+body.is-scrolling .contact-section::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--section-gutter-thickness);
+  pointer-events: none;
+  z-index: 3;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-image:
+    /* soft outer glow */
+    linear-gradient(90deg, transparent, var(--section-divider-glow) 50%, transparent),
+    /* upper crisp line at seam */
+    linear-gradient(90deg, transparent, var(--section-divider-strong) 50%, transparent),
+    /* fade gutter (top) */
+    linear-gradient(to bottom, var(--section-gutter-fade) 0%, rgba(0,0,0,0) 80%);
+  background-size:
+    calc(100% - (2 * var(--section-gutter-inset))) calc(2 * var(--section-divider-width)),
+    calc(100% - (2 * var(--section-gutter-inset))) var(--section-divider-width),
+    100% 100%;
+  background-position:
+    center var(--section-divider-width),
+    center calc(var(--section-divider-gap) + (2 * var(--section-divider-width))),
+    left top;
+}
+
+/* Section visual isolation: prevent color bleed across sections */
+.about-section,
+.projects-section,
+.skills-section,
+.achievements-section,
+.contact-section {
+  position: relative;
+  isolation: isolate; /* create new stacking context */
+  overflow: clip; /* clip gutters strictly inside the section */
+}
+
+/* Ensure section content is above transition gutters/dividers */
+.about-section > *,
+.projects-section > *,
+.skills-section > *,
+.achievements-section > *,
+.contact-section > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Keep gutters/dividers below section content but above section background */
+body.is-scrolling .about-section::before,
+body.is-scrolling .about-section::after,
+body.is-scrolling .projects-section::before,
+body.is-scrolling .projects-section::after,
+body.is-scrolling .skills-section::before,
+body.is-scrolling .skills-section::after,
+body.is-scrolling .cv-section::before,
+body.is-scrolling .cv-section::after,
+body.is-scrolling .achievements-section::before,
+body.is-scrolling .achievements-section::after,
+body.is-scrolling .contact-section::before,
+body.is-scrolling .contact-section::after {
+  z-index: 0;
+}
+
+/* Accessibility: honor reduced motion without breaking the snap model */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  body { scroll-snap-type: y mandatory; }
+  :root {
+    --section-gutter-thickness: clamp(24px, 4svh, 64px);
+    --section-divider-gap: clamp(1px, 0.25vw, 4px);
+  }
 }
 
 /* === Scroll-based Animations === */

@@ -8,12 +8,15 @@ navLinks.forEach(link => {
     
     const href = link.getAttribute('href');
     const targetSection = document.querySelector(href);
-    
     if (targetSection) {
-      // Find the section index
-      const sectionIndex = sections.indexOf(targetSection);
-      if (sectionIndex !== -1) {
+      // Use ScrollManager's sections to find index
+      const sectionIndex = (typeof scrollManager !== 'undefined' && scrollManager.sections)
+        ? scrollManager.sections.indexOf(targetSection)
+        : -1;
+      if (sectionIndex !== -1 && typeof scrollToSection === 'function') {
         scrollToSection(sectionIndex);
+      } else {
+        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
       }
     }
     
@@ -255,27 +258,28 @@ class ScrollManager {
     this.updateScrollProgress();
     // Initial nav link setup
     this.setActiveNavLink();
+    // Ensure initial seam state is correct
+    this.toggleScrollingClass(false);
+    this.setupActiveSectionObservers();
   }
   
   setupEventListeners() {
-    // Wheel event with improved performance
-    window.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
+    // Let CSS scroll-snap handle wheel/trackpad scrolling
     
     // Keyboard navigation
     window.addEventListener('keydown', this.handleKeydown.bind(this));
     
     // Scroll tracking
-    window.addEventListener('scroll', this.handleScroll.bind(this));
+    window.addEventListener('scroll', this.handleScroll.bind(this), { passive: true });
     
-    // Mobile scroll prevention and initial setup
+    // Initial setup
     window.addEventListener('DOMContentLoaded', () => {
       this.currentSectionIndex = 0;
-      this.setupMobileScrollPrevention();
       this.setActiveNavLink();
+      this.handleScrollAnimations();
     });
     
     window.addEventListener('resize', () => {
-      this.setupMobileScrollPrevention();
       this.setActiveNavLink();
     });
   }
@@ -330,14 +334,32 @@ class ScrollManager {
   }
   
   handleScroll() {
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) return;
-    
+    // Mark as scrolling to show transition seam only while moving
+    this.toggleScrollingClass(true);
+    this.clearScrollTimeout();
+    this.scrollIdleTimeout = setTimeout(() => {
+      this.toggleScrollingClass(false);
+      this.updateActiveSectionBySnapLine();
+    }, 160);
     if (this.isPageSnapping) return;
-    
     this.updateScrollProgress();
     this.updateCurrentSection();
     this.handleScrollAnimations();
+  }
+
+  clearScrollTimeout() {
+    if (this.scrollIdleTimeout) {
+      clearTimeout(this.scrollIdleTimeout);
+      this.scrollIdleTimeout = null;
+    }
+  }
+
+  toggleScrollingClass(isScrolling) {
+    if (isScrolling) {
+      document.body.classList.add('is-scrolling');
+    } else {
+      document.body.classList.remove('is-scrolling');
+    }
   }
   
   updateScrollProgress() {
@@ -370,25 +392,12 @@ class ScrollManager {
   }
   
   setActiveNavLink() {
-    const scrollPos = window.scrollY + (document.querySelector('header')?.offsetHeight || 0) + 10;
-    let foundActive = false;
     const navLinks = document.querySelectorAll('.nav-link');
-    
-    navLinks.forEach(link => {
-      const section = document.querySelector(link.getAttribute('href'));
-      if (section) {
-        const sectionTop = section.offsetTop;
-        const sectionBottom = sectionTop + section.offsetHeight;
-        if (!foundActive && scrollPos >= sectionTop && scrollPos < sectionBottom) {
-          link.classList.add('active');
-          foundActive = true;
-        } else {
-          link.classList.remove('active');
-        }
-      } else {
-        link.classList.remove('active');
-      }
-    });
+    navLinks.forEach(link => link.classList.remove('active'));
+    const activeSection = this.sections[this.currentSectionIndex];
+    if (!activeSection) return;
+    const activeLink = Array.from(navLinks).find(l => l.getAttribute('href') === `#${activeSection.id}`);
+    if (activeLink) activeLink.classList.add('active');
   }
   
   showScrollDirection(direction) {
@@ -408,27 +417,53 @@ class ScrollManager {
     this.isPageSnapping = true;
     this.currentSectionIndex = index;
     
-    const isMobile = window.innerWidth <= 768;
-    
-    if (isMobile) {
-      this.sections[index].scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start',
-        inline: 'nearest'
-      });
-      
-      closeMobileNav();
-      this.setActiveNavLink();
-      setTimeout(() => { this.isPageSnapping = false; }, 600);
+    this.sections[index].scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start',
+      inline: 'nearest'
+    });
+    closeMobileNav();
+    // After smooth scroll, confirm active section based on snap line
+    setTimeout(() => {
+      this.isPageSnapping = false;
+      this.updateActiveSectionBySnapLine();
+    }, 600);
+  }
+
+  setupActiveSectionObservers() {
+    // Use scrollend when supported, fallback to debounced update
+    const onRest = () => this.updateActiveSectionBySnapLine();
+    if ('onscrollend' in window) {
+      window.addEventListener('scrollend', onRest);
     } else {
-      this.sections[index].scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start',
-        inline: 'nearest'
+      // Already debounced in handleScroll; also ensure after resize and hash changes
+      window.addEventListener('hashchange', onRest);
+      window.addEventListener('resize', () => {
+        clearTimeout(this._resizeTO);
+        this._resizeTO = setTimeout(onRest, 150);
       });
-      
-      setTimeout(() => { this.isPageSnapping = false; }, 600);
     }
+    // Initial compute post-load
+    window.addEventListener('load', onRest);
+  }
+
+  updateActiveSectionBySnapLine() {
+    const headerHeight = (document.querySelector('header')?.offsetHeight || 0);
+    const snapLineY = headerHeight; // top snap line under fixed header
+    let bestIndex = 0;
+    let bestDistance = Infinity;
+    this.sections.forEach((section, idx) => {
+      const rect = section.getBoundingClientRect();
+      const distance = Math.abs(rect.top - snapLineY);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestIndex = idx;
+      }
+    });
+    if (bestIndex !== this.currentSectionIndex) {
+      this.currentSectionIndex = bestIndex;
+    }
+    this.setActiveNavLink();
   }
   
   setupMobileScrollPrevention() {
