@@ -3,7 +3,10 @@ export const featuredProject = {
   stack: 'React · Web Scraping · Data Aggregation · Search UI',
   description:
     'A course-discovery platform built to help Stony Brook students identify lower-stress general education options using publicly available course data, filtering, and simplified search. The project spread quickly across campus, reaching thousands of students and generating over 15k+ views within a few days before it was later removed following university concerns.',
-  link: { label: 'Read More', href: '#' },
+  link: {
+    label: 'Read More',
+    href: 'https://www.linkedin.com/posts/giovanni-v_my-site-got-thousands-of-users-in-3-days-activity-7394822093907005440-4doe/',
+  },
 };
 
 export const projects = [
