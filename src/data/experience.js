@@ -5,7 +5,7 @@ export const experience = [
     company: 'Betterment',
     location: 'New York City, NY',
     description:
-      'Working on backend systems related to payroll integrations, async workflows, and making external systems more reliable.',
+      'Focused on payroll integrations, async workflows, and improving reliability across backend systems tied to fintech infrastructure.',
   },
   {
     title: 'Software Engineer Intern',
@@ -13,7 +13,7 @@ export const experience = [
     company: 'Acadia Analytics',
     location: 'Cambridge, Massachusetts',
     description:
-      'Built backend services, APIs, and data workflows to improve forecasting systems, pipeline efficiency, and model evaluation processes.',
+      'Built APIs, forecasting workflows, and data-heavy backend tooling that supported model evaluation and analytics pipelines.',
   },
   {
     title: 'Software Engineer Intern',
@@ -21,7 +21,7 @@ export const experience = [
     company: 'Desung',
     location: 'New York City, NY',
     description:
-      'Developed backend systems, debugging tools, and game-service infrastructure to improve performance, testing, and user experience.',
+      'Worked across backend tooling, debugging systems, and game infrastructure to improve stability, testing, and overall behavior.',
   },
   {
     title: 'Teaching Assistant',
