@@ -1,7 +1,7 @@
 function ProfileLinks() {
   return (
     <div className="profile-links" aria-label="Profile links">
-      <a href="#" aria-label="LinkedIn">
+      <a href="https://www.linkedin.com/in/justinyuillee/" aria-label="LinkedIn">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5ZM.36 8.1h4.27V23H.36V8.1Zm7.08 0h4.09v2.03h.06c.57-1.08 1.96-2.23 4.04-2.23 4.32 0 5.12 2.84 5.12 6.54V23h-4.26v-7.59c0-1.81-.03-4.14-2.52-4.14-2.53 0-2.92 1.98-2.92 4.01V23H7.44V8.1Z" />
         </svg>
