@@ -10,6 +10,7 @@ function About() {
       school: 'Stony Brook University',
       dates: '2023 – 2026',
       degree: 'BS Computer Science, Applied Mathematics & Statistics',
+      track: 'Machine Learning Concentration',
     },
   ];
 

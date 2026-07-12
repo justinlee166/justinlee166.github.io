@@ -25,6 +25,7 @@ export const experience = [
   },
   {
     title: 'Teaching Assistant',
+    dates: 'Sept 2024 – May 2025',
     company: 'Stony Brook University',
     location: 'Stony Brook, NY',
     description:

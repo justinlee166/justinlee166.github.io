@@ -12,11 +12,11 @@ function Experience() {
           {experience.map((item) => (
             <article className="experience-item" key={`${item.company}-${item.dates}`}>
               <div className="experience-item__topline">
-                <h3>{item.title}</h3>
+                <h3>{item.company}</h3>
                 {item.dates ? <span>{item.dates}</span> : null}
               </div>
               <div className="experience-item__meta">
-                <strong>{item.company}</strong>
+                <strong>{item.title}</strong>
                 <span>{item.location}</span>
               </div>
               <p>{item.description}</p>
